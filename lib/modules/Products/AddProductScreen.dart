@@ -62,150 +62,148 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     const SizedBox(height: 20),
 
                     // Scrollable area
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Container(
-                          padding: const EdgeInsets.all(28),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(18),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12.withOpacity(0.05),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
+                    SingleChildScrollView(
+                      child: Container(
+                        padding: const EdgeInsets.all(28),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
 
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
 
-                              // PRODUCT NAME + CATEGORY
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _textField(
-                                      label: "Product Name",
-                                      hint: "Enter coffee name",
-                                    ),
+                            // PRODUCT NAME + CATEGORY
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _textField(
+                                    label: "Product Name",
+                                    hint: "Enter coffee name",
                                   ),
-                                  const SizedBox(width: 22),
-                                  Expanded(
-                                    child: _dropdown(
-                                      label: "Product Category",
-                                      value: _selectedCategory,
-                                      items: categories,
-                                      onChanged: (v) => setState(() => _selectedCategory = v),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 20),
-
-                              // PRICE + SIZE
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _textField(
-                                      label: "Price",
-                                      hint: "9.50",
-                                    ),
-                                  ),
-                                  const SizedBox(width: 22),
-                                  Expanded(
-                                    child: _dropdown(
-                                      label: "Product Size",
-                                      value: _selectedSize,
-                                      items: sizes,
-                                      onChanged: (v) => setState(() => _selectedSize = v),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 20),
-
-                              // AVAILABLE IN
-                              _dropdown(
-                                label: "Available In",
-                                value: _selectedAvailable,
-                                items: availableIn,
-                                onChanged: (v) => setState(() => _selectedAvailable = v),
-                              ),
-
-                              const SizedBox(height: 24),
-
-                              // IMAGE UPLOAD BOX
-                              Container(
-                                width: double.infinity,
-                                height: 160,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: const Color(0xFFE2E2E2)),
                                 ),
-                                child: Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      ElevatedButton(
-                                        onPressed: () {},
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: kPrimaryGreen,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 22, vertical: 10),
-                                        ),
-                                        child: const Text(
-                                          "Upload Image",
-                                          style: TextStyle(color: Colors.white),
-                                        ),
+                                const SizedBox(width: 22),
+                                Expanded(
+                                  child: _dropdown(
+                                    label: "Product Category",
+                                    value: _selectedCategory,
+                                    items: categories,
+                                    onChanged: (v) => setState(() => _selectedCategory = v),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            // PRICE + SIZE
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _textField(
+                                    label: "Price",
+                                    hint: "9.50",
+                                  ),
+                                ),
+                                const SizedBox(width: 22),
+                                Expanded(
+                                  child: _dropdown(
+                                    label: "Product Size",
+                                    value: _selectedSize,
+                                    items: sizes,
+                                    onChanged: (v) => setState(() => _selectedSize = v),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            // AVAILABLE IN
+                            _dropdown(
+                              label: "Available In",
+                              value: _selectedAvailable,
+                              items: availableIn,
+                              onChanged: (v) => setState(() => _selectedAvailable = v),
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            // IMAGE UPLOAD BOX
+                            Container(
+                              width: double.infinity,
+                              height: 160,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: const Color(0xFFE2E2E2)),
+                              ),
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    ElevatedButton(
+                                      onPressed: () {},
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: kPrimaryGreen,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 22, vertical: 10),
                                       ),
-                                      const SizedBox(height: 10),
-                                      const Text(
-                                        "Drag your image here or upload",
-                                        style: TextStyle(color: Colors.black54),
-                                      )
-                                    ],
-                                  ),
+                                      child: const Text(
+                                        "Upload Image",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    const Text(
+                                      "Drag your image here or upload",
+                                      style: TextStyle(color: Colors.black54),
+                                    )
+                                  ],
                                 ),
                               ),
+                            ),
 
-                              const SizedBox(height: 26),
+                            const SizedBox(height: 26),
 
-                              // ACTION BUTTONS
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  TextButton(
-                                    onPressed: () {
-                                      if (widget.onCancel != null) widget.onCancel!();
-                                    },
-                                    child: const Text(
-                                      "Cancel",
-                                      style: TextStyle(fontSize: 16),
-                                    ),
+                            // ACTION BUTTONS
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton(
+                                  onPressed: () {
+                                    if (widget.onCancel != null) widget.onCancel!();
+                                  },
+                                  child: const Text(
+                                    "Cancel",
+                                    style: TextStyle(fontSize: 16),
                                   ),
+                                ),
 
-                                  const SizedBox(width: 16),
+                                const SizedBox(width: 16),
 
-                                  ElevatedButton(
-                                    onPressed: () {},
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: kPrimaryGreen,
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 38, vertical: 12),
-                                    ),
-                                    child: const Text(
-                                      "Add",
-                                      style: TextStyle(color: Colors.white, fontSize: 16),
-                                    ),
-                                  )
-                                ],
-                              )
-                            ],
-                          ),
+                                ElevatedButton(
+                                  onPressed: () {},
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: kPrimaryGreen,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 38, vertical: 12),
+                                  ),
+                                  child: const Text(
+                                    "Add",
+                                    style: TextStyle(color: Colors.white, fontSize: 16),
+                                  ),
+                                )
+                              ],
+                            )
+                          ],
                         ),
                       ),
                     )

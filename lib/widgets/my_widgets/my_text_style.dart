@@ -94,7 +94,7 @@ class MyTextStyle {
 
   static TextStyle getStyle(
       {TextStyle? textStyle,
-      int? fontWeight = 500,
+      int? fontWeight,
       bool muted = false,
       bool xMuted = false,
       double? letterSpacing,
@@ -527,7 +527,7 @@ class MyTextStyle {
 
   //-------------------Reset Font Styles---------------------------------
   static resetFontStyles() {
-    _fontFamily = GoogleFonts.ibmPlexSans;
+    _fontFamily = GoogleFonts.poppins;
 
     _defaultFontWeight = {
       100: FontWeight.w100,

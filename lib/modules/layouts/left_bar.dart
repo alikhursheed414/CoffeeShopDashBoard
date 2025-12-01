@@ -82,7 +82,7 @@ class _LeftBarState extends State<LeftBar> with SingleTickerProviderStateMixin, 
                       margin: const EdgeInsets.only(top: 30),
                       decoration: const BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage('assets/images/logo.png'),
+                          image: AssetImage('assets/images/whiteBgLogo.png'),
                           fit: BoxFit.contain
                         )
                       ),
@@ -90,7 +90,7 @@ class _LeftBarState extends State<LeftBar> with SingleTickerProviderStateMixin, 
                         height: 30,
                         width: 140,
                         child: ClipRRect(
-                          child: Image.asset("assets/images/logo.png",fit: BoxFit.cover,width: 40,height: 40,)
+                          child: Image.asset("assets/images/whiteBgLogo.png",fit: BoxFit.cover,width: 40,height: 40,)
                         )
                     )
                   )
@@ -437,10 +437,8 @@ class _NavigationItemState extends State<NavigationItem> with UIMixin {
     return GestureDetector(
       onTap: () {
         if (widget.route != null) {
-          // currentRoute = widget.route!;
+          currentRoute = widget.route!;
          context.beamToNamed(widget.route!);
-
-          // MyRouter.pushReplacementNamed(context, widget.route!, arguments: 1);
         }
       },
       child: MouseRegion(
@@ -455,7 +453,7 @@ class _NavigationItemState extends State<NavigationItem> with UIMixin {
             isHover = false;
           });
         },
-        child: MyContainer.transparent(
+        child: MyContainer(
           margin: MySpacing.fromLTRB(16, 0, 16, 8),
           color: isActive || isHover ? activeItemColor : Colors.transparent,
           padding: MySpacing.xy(8, 8),
@@ -484,7 +482,7 @@ class _NavigationItemState extends State<NavigationItem> with UIMixin {
                     maxLines: 1,
                     color: colorWhite,
                   ),
-                )
+                ),
             ],
           ),
         ),

@@ -5,6 +5,7 @@
 // To run on web: flutter run -d chrome
 
 import 'package:beamer/beamer.dart';
+import 'package:coffee_shop_dashboard/core/helpers/theme/app_style.dart';
 import 'package:coffee_shop_dashboard/core/utils/sp_utils.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_text.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -18,9 +19,6 @@ import 'core/helpers/constants.dart';
 import 'core/helpers/theme/app_notifier.dart';
 import 'firebase_options.dart';
 import 'location_builders.dart';
-import 'modules/Campaigns/Campaigns.dart';
-import 'modules/OrderPage/OrderPage.dart';
-import 'modules/Products/Products.dart';
 import 'package:url_strategy/url_strategy.dart';
 
 void main()async {
@@ -30,7 +28,7 @@ void main()async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
+  AppStyle.init();
   init();
 
   runApp(ChangeNotifierProvider<AppNotifier>(

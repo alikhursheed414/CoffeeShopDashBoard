@@ -36,7 +36,7 @@ class MyText extends StatelessWidget {
 
   const MyText(this.text,
       {this.style,
-      this.fontWeight = 500,
+      this.fontWeight,
       this.muted = false,
       this.xMuted = false,
       this.letterSpacing = 0.15,
@@ -136,7 +136,7 @@ class MyText extends StatelessWidget {
 
   const MyText.headlineLarge(this.text,
       {this.style,
-      this.fontWeight = 500,
+      this.fontWeight,
       this.muted = false,
       this.xMuted = false,
       this.letterSpacing,
@@ -161,7 +161,7 @@ class MyText extends StatelessWidget {
 
   const MyText.headlineMedium(this.text,
       {this.style,
-      this.fontWeight = 500,
+      this.fontWeight,
       this.muted = false,
       this.xMuted = false,
       this.letterSpacing,
@@ -186,7 +186,7 @@ class MyText extends StatelessWidget {
 
   const MyText.headlineSmall(this.text,
       {this.style,
-      this.fontWeight = 500,
+      this.fontWeight,
       this.muted = false,
       this.xMuted = false,
       this.letterSpacing,

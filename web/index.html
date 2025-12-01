@@ -27,10 +27,19 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="logo.png"/>
+  <link rel="icon" type="image/png" href="favicon.png"/>
 
   <title>Market Coffee</title>
   <link rel="manifest" href="manifest.json">
+
+  <script>
+    window.addEventListener("wheel", function (event) {
+      if (event.deltaX !== 0) {
+        event.preventDefault();
+      }
+    }, { passive: false });
+  </script>
+
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

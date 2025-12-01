@@ -5,6 +5,7 @@ import 'package:coffee_shop_dashboard/modules/OrderPage/OrderPage.dart';
 import 'package:coffee_shop_dashboard/modules/Products/AddProductScreen.dart';
 import 'package:coffee_shop_dashboard/modules/Products/Products.dart';
 import 'package:flutter/foundation.dart';
+import 'modules/Campaigns/campaigns_list_page.dart';
 import 'modules/Dashboard/dashboard_screen.dart';
 
 final simpleLocationBuilder = RoutesLocationBuilder(
@@ -43,10 +44,15 @@ final simpleLocationBuilder = RoutesLocationBuilder(
         child: OrdersPage(),
       ),
 
+      '/add-campaign': (context, state, data) => const BeamPage(
+        key: ValueKey('add-campaign'),
+        title: 'Add Campaign',
+        child: AddCampaignScreen(),
+      ),
       '/campaigns': (context, state, data) => const BeamPage(
         key: ValueKey('campaigns'),
         title: 'Campaigns',
-        child: AddCampaignScreen(),
+        child: CampaignsListPage(),
       ),
       //
       // ///Home Screen or Dashboard

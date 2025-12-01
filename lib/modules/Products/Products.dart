@@ -3,8 +3,10 @@ import 'package:coffee_shop_dashboard/modules/layouts/layout.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_flex.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_flex_item.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_responsiv.dart';
+import 'package:coffee_shop_dashboard/widgets/my_widgets/my_text.dart';
 import 'package:flutter/material.dart';
 import '../../core/helpers/colors.dart';
+import '../../widgets/my_widgets/my_button.dart';
 import 'AddProductScreen.dart';
 
 class ProductsPage extends StatefulWidget {
@@ -74,30 +76,40 @@ class _ProductsPageState extends State<ProductsPage> {
                 const SizedBox(width: 18),
 
                 // ADD PRODUCT BUTTON — FIXED
-                GestureDetector(
-                  onTap: () {
+                MyButton(
+                  onPressed: (){
                     context.beamToNamed('/add-product');
                   },
-                  child: Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: kPrimaryGreen,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: const [
-                        Icon(Icons.add, color: Colors.white, size: 18),
-                        SizedBox(width: 8),
-                        Text(
-                          "Add new Product",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ],
-                    ),
+                  borderRadiusAll: 10,
+                  msPadding: WidgetStateProperty.all(
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
+                  child: MyText("+ Add new Product", color: Colors.white,),
                 ),
+                // GestureDetector(
+                //   onTap: () {
+                //     context.beamToNamed('/add-product');
+                //   },
+                //   child: Container(
+                //     padding:
+                //     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                //     height: 40,
+                //     decoration: BoxDecoration(
+                //       color: kPrimaryGreen,
+                //       borderRadius: BorderRadius.circular(10),
+                //     ),
+                //     child: Row(
+                //       children: const [
+                //         Icon(Icons.add, color: Colors.white, size: 18),
+                //         SizedBox(width: 8),
+                //         Text(
+                //           "Add new Product",
+                //           style: TextStyle(color: Colors.white),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           ],

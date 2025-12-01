@@ -230,7 +230,7 @@ class AppTheme {
   }
 
   static initTextStyle() {
-    MyTextStyle.changeFontFamily(GoogleFonts.ibmPlexSans);
+    MyTextStyle.changeFontFamily(GoogleFonts.poppins);
     MyTextStyle.changeDefaultFontWeight({
       100: FontWeight.w100,
       200: FontWeight.w200,
