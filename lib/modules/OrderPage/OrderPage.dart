@@ -1,49 +1,66 @@
+import 'package:coffee_shop_dashboard/modules/layouts/layout.dart';
+import 'package:coffee_shop_dashboard/widgets/my_widgets/my_flex.dart';
+import 'package:coffee_shop_dashboard/widgets/my_widgets/my_flex_item.dart';
+import 'package:coffee_shop_dashboard/widgets/my_widgets/my_responsiv.dart';
 import 'package:flutter/material.dart';
-import '../main.dart'; // for your color constants
+import '../../core/helpers/colors.dart';
 
 class OrdersPage extends StatelessWidget {
   const OrdersPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // -------------------------------
-        // TITLE + FILTERS ROW
-        // -------------------------------
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              "Orders",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            Row(
-              children: [
-                _dateFilter(),
-                const SizedBox(width: 16),
-                _sortFilter(),
-              ],
-            )
-          ],
-        ),
+    return Layout(
+      child: MyResponsive(
+        builder: (_, __, type) {
+          return MyFlex(
+            contentPadding: true,
+            children: [
+              MyFlexItem(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // -------------------------------
+                    // TITLE + FILTERS ROW
+                    // -------------------------------
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Orders",
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        ),
+                        Row(
+                          children: [
+                            _dateFilter(),
+                            const SizedBox(width: 16),
+                            _sortFilter(),
+                          ],
+                        )
+                      ],
+                    ),
 
-        const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-        // -------------------------------
-        // TABLE
-        // -------------------------------
-        _orderTable(),
+                    // -------------------------------
+                    // TABLE
+                    // -------------------------------
+                    _orderTable(),
 
-        const SizedBox(height: 50),
+                    const SizedBox(height: 50),
 
-        // -------------------------------
-        // PAGINATION
-        // -------------------------------
-        _pagination(),
-        const SizedBox(height: 40),
-      ],
+                    // -------------------------------
+                    // PAGINATION
+                    // -------------------------------
+                    _pagination(),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ],
+          );
+        }
+      ),
     );
   }
 

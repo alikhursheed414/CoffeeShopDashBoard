@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "891792045716",
+    "project_id": "login-7df61",
+    "storage_bucket": "login-7df61.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:891792045716:android:a8095d25833802fb072681",
+        "android_client_info": {
+          "package_name": "com.example.coffee_shop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "891792045716-q8f0786fiodvpe3g8fieopq60ihn2kvl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.coffee_shop",
+            "certificate_hash": "d4f91c0020d1f0f00c2e37c163f02a4af1a83073"
+          }
+        },
+        {
+          "client_id": "891792045716-suifsib5a5d9a0gbv8qh6695v6g3d59g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.coffee_shop",
+            "certificate_hash": "69c42ef9c33318a83ff706ac135c0420f0da8ff9"
+          }
+        },
+        {
+          "client_id": "891792045716-uvtrlhe0e1onok1hatng41cmoa7d364a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZad3CmH_5eUpJI58LVKYBeVhjVUKuchw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "891792045716-uvtrlhe0e1onok1hatng41cmoa7d364a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

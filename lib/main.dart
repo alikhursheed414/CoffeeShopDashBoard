@@ -4,137 +4,191 @@
 // Then run: flutter pub get
 // To run on web: flutter run -d chrome
 
+import 'package:beamer/beamer.dart';
+import 'package:coffee_shop_dashboard/core/utils/sp_utils.dart';
+import 'package:coffee_shop_dashboard/widgets/my_widgets/my_text.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'bindings/app_binding.dart';
+import 'core/helpers/colors.dart';
+import 'core/helpers/constants.dart';
+import 'core/helpers/theme/app_notifier.dart';
+import 'firebase_options.dart';
+import 'location_builders.dart';
+import 'modules/Campaigns/Campaigns.dart';
+import 'modules/OrderPage/OrderPage.dart';
+import 'modules/Products/Products.dart';
+import 'package:url_strategy/url_strategy.dart';
 
-import 'Campaigns/Campaigns.dart';
-import 'OrderPage/OrderPage.dart';
-import 'Products/Products.dart';
+void main()async {
 
-void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  setPathUrlStrategy();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  init();
+
+  runApp(ChangeNotifierProvider<AppNotifier>(
+    create: (context) => AppNotifier(),
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+   MyApp({super.key});
+
+  final routerDelegate = BeamerDelegate(
+    locationBuilder: simpleLocationBuilder.call,
+    initialPath: spUtil?.get(apiToken) != null ? '/dashboard' : '/admin/login',
+    // initialPath: '/admin/login',
+    transitionDelegate: const NoAnimationTransitionDelegate(),
+    setBrowserTabTitle: true,
+    // notFoundPage: const NotFoundBeamPage(),
+    routeListener: (routeInformation, delegate) {
+      // currentRoute = routeInformation.uri.path;
+    },
+    // guards: [
+    //   BeamGuard(
+    //       pathPatterns: protectedRoutePaths,
+    //       check: (context, location) => spUtil?.get(apiToken) != null,
+    //       beamToNamed: (origin, target) => '/admin/login'
+    //   ),
+    // ],
+  );
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Dashboard Web',
-      theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white,
-        textTheme: GoogleFonts.poppinsTextTheme(),
-      ),
-      home: const DashboardScreen(),
+    return Consumer<AppNotifier>(
+      builder: (_, notifier, ___) {
+        return GetMaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          routerDelegate: routerDelegate,
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+            useMaterial3: true,),
+          routeInformationParser: BeamerParser(),
+          backButtonDispatcher: BeamerBackButtonDispatcher(delegate: routerDelegate),
+          key: Get.key,
+          initialBinding: AppBinding(),
+        );
+      },
     );
+    // return GetMaterialApp(
+    //   debugShowCheckedModeBanner: false,
+    //   title: 'Dashboard Web',
+    //   theme: ThemeData(
+    //     scaffoldBackgroundColor: Colors.white,
+    //     textTheme: GoogleFonts.poppinsTextTheme(),
+    //   ),
+    //   home: const DashboardScreen(),
+    // );
   }
 }
 
-// Colors used in design
-const Color kPrimaryGreen = Color(0xFF103922); // dark sidebar
-const Color kAccentGreen = Color(0xFF173C2F);
-const Color kLightGreen = Color(0xFFE2F3E9);
-const Color kCardBorder = Color(0xFFE9F3EC);
+// class DashboardScreen extends StatefulWidget {
+//   const DashboardScreen({super.key});
+//
+//   @override
+//   State<DashboardScreen> createState() => _DashboardScreenState();
+// }
+//
+// class _DashboardScreenState extends State<DashboardScreen> {
+//   int selectedIndex = 0; // 0=Dashboard, 1=Products, 2=Orders, 3=Campaigns
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body: Row(
+//         children: [
+//           // Sidebar
+//           Container(
+//             width: 280,
+//             decoration: BoxDecoration(
+//               color: kPrimaryGreen,
+//               borderRadius: const BorderRadius.only(
+//                 topRight: Radius.circular(20),
+//                 bottomRight: Radius.circular(20),
+//               ),
+//             ),
+//             child: SafeArea(
+//               child: Sidebar(
+//                 selectedIndex: selectedIndex,
+//                 onSelect: (i) {
+//                   setState(() => selectedIndex = i);
+//                 },
+//               ),
+//             ),
+//           ),
+//
+//           // Main content
+//           Expanded(
+//             child: SingleChildScrollView(
+//               padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 36),
+//               child: _buildPage(),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+//
+//   Widget _buildPage() {
+//     switch (selectedIndex) {
+//       case 0:
+//         return Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: const [
+//             TopBar(),
+//             SizedBox(height: 28),
+//             DashboardHeader(),
+//             SizedBox(height: 20),
+//             InfoCardsRow(),
+//             SizedBox(height: 32),
+//             RevenueAnalyticsSection(),
+//           ],
+//         );
+//       case 1:
+//         return Column(
+//           mainAxisAlignment: MainAxisAlignment.start,
+//           children: const [
+//             TopBar(),
+//             SizedBox(height: 28),
+//             ProductsPage(),   // 👈 new module
+//           ],
+//         );
+//
+//       case 2:
+//         return Column(
+//           mainAxisAlignment: MainAxisAlignment.start,
+//           mainAxisSize: MainAxisSize.min,
+//           children: const [
+//             TopBar(),
+//             SizedBox(height: 28),
+//             OrdersPage(),
+//           ],
+//         );
+//       case 3:
+//         return Column(
+//           mainAxisAlignment: MainAxisAlignment.start,
+//           mainAxisSize: MainAxisSize.min,
+//           children: const [
+//             TopBar(),
+//             SizedBox(height: 28),
+//             AddCampaignScreen(),
+//           ],
+//         );
+//       default:
+//         return const SizedBox();
+//     }
+//   }
+// }
 
-class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
-
-  @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends State<DashboardScreen> {
-  int selectedIndex = 0; // 0=Dashboard, 1=Products, 2=Orders, 3=Campaigns
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Row(
-        children: [
-          // Sidebar
-          Container(
-            width: 280,
-            decoration: BoxDecoration(
-              color: kPrimaryGreen,
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-            ),
-            child: SafeArea(
-              child: Sidebar(
-                selectedIndex: selectedIndex,
-                onSelect: (i) {
-                  setState(() => selectedIndex = i);
-                },
-              ),
-            ),
-          ),
-
-          // Main content
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 36),
-              child: _buildPage(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPage() {
-    switch (selectedIndex) {
-      case 0:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            TopBar(),
-            SizedBox(height: 28),
-            DashboardHeader(),
-            SizedBox(height: 20),
-            InfoCardsRow(),
-            SizedBox(height: 32),
-            RevenueAnalyticsSection(),
-          ],
-        );
-      case 1:
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: const [
-            TopBar(),
-            SizedBox(height: 28),
-            ProductsPage(),   // 👈 new module
-          ],
-        );
-
-      case 2:
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            TopBar(),
-            SizedBox(height: 28),
-            OrdersPage(),
-          ],
-        );
-      case 3:
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            TopBar(),
-            SizedBox(height: 28),
-            AddCampaignScreen(),
-          ],
-        );
-      default:
-        return const SizedBox();
-    }
-  }
-}class Sidebar extends StatelessWidget {
+class Sidebar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelect;
   const Sidebar({super.key, required this.selectedIndex, required this.onSelect});
@@ -407,12 +461,14 @@ class _DashboardHeaderState extends State<DashboardHeader> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        MyText.bodyLarge(
           'Dashboard',
-          style: GoogleFonts.poppins(
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-          ),
+          fontWeight: 800,
+          fontSize: 30,
+          // style: GoogleFonts.poppins(
+          //   fontSize: 30,
+          //   fontWeight: FontWeight.bold,
+          // ),
         ),
 
         const SizedBox(height: 14),

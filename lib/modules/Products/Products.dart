@@ -1,6 +1,11 @@
+import 'package:beamer/beamer.dart';
+import 'package:coffee_shop_dashboard/modules/layouts/layout.dart';
+import 'package:coffee_shop_dashboard/widgets/my_widgets/my_flex.dart';
+import 'package:coffee_shop_dashboard/widgets/my_widgets/my_flex_item.dart';
+import 'package:coffee_shop_dashboard/widgets/my_widgets/my_responsiv.dart';
 import 'package:flutter/material.dart';
-import '../main.dart';
-import 'AddProductScreen.dart'; // for colors — or copy your colors manually
+import '../../core/helpers/colors.dart';
+import 'AddProductScreen.dart';
 
 class ProductsPage extends StatefulWidget {
   const ProductsPage({super.key});
@@ -14,15 +19,19 @@ class _ProductsPageState extends State<ProductsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height, // give full screen height
-      child: showAddScreen
-          ? AddProductScreen(
-        onCancel: () {
-          setState(() => showAddScreen = false);
-        },
-      )
-          : _buildProductList(),
+    return Layout(
+      child: MyResponsive(
+        builder: (_, __, type){
+          return MyFlex(
+            contentPadding: true,
+            children: [
+              MyFlexItem(
+                child: _buildProductList()
+              )
+            ]
+          );
+        }
+      ),
     );
 
   }
@@ -67,7 +76,7 @@ class _ProductsPageState extends State<ProductsPage> {
                 // ADD PRODUCT BUTTON — FIXED
                 GestureDetector(
                   onTap: () {
-                    setState(() => showAddScreen = true);
+                    context.beamToNamed('/add-product');
                   },
                   child: Container(
                     padding:
