@@ -90,7 +90,12 @@ class CampaignsFirebaseController extends GetxController {
       // -----------------------------------------------------------
       // 🟢 ADD NEW CAMPAIGN
       // -----------------------------------------------------------
-      await _firestore.collection(collectionName).add({
+      // Generate a new document reference to get the ID
+      final docRef = _firestore.collection(collectionName).doc();
+      final campaignId = docRef.id;
+
+      await docRef.set({
+        "campaignId": campaignId, // Add campaignId field
         "title": title,
         "subtitle": subtitle,
         "startDate": startDate.toIso8601String(),

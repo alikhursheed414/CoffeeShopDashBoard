@@ -110,8 +110,13 @@ class ProductController extends MyController{
       // Placeholder image URL (since Firebase Storage is not available)
       const String placeholderImage = "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400";
 
+      // Generate a new document reference to get the ID
+      final docRef = _firestore.collection(collectionName).doc();
+      final productId = docRef.id;
+
       // Create product data
       Map<String, dynamic> productData = {
+        "productId": productId, // Add productId field
         "name": name,
         "price": price,
         "category": category,
@@ -126,8 +131,8 @@ class ProductController extends MyController{
         productData["size"] = size ?? "Medium";
       }
 
-      // Add to Firestore
-      await _firestore.collection(collectionName).add(productData);
+      // Add to Firestore using the generated document reference
+      await docRef.set(productData);
 
       Get.snackbar("Success", "Product added successfully");
       return true;
