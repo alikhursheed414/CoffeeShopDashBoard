@@ -5,9 +5,19 @@ import 'package:coffee_shop_dashboard/widgets/my_widgets/my_flex_item.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_responsiv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+
+import '../../controllers/campaign_controller/campaignControllers.dart';
+import '../../core/helpers/colors.dart';
+import '../../widgets/my_widgets/my_button.dart';
+import '../../widgets/my_widgets/my_spacing.dart';
+import '../../widgets/my_widgets/my_text.dart';
 
 class AddCampaignScreen extends StatefulWidget {
-  const AddCampaignScreen({super.key});
+  final String? docId; // ⬅ Optional, for edit
+
+  const AddCampaignScreen({super.key, this.docId});
 
   @override
   State<AddCampaignScreen> createState() => _AddCampaignScreenState();
@@ -16,6 +26,31 @@ class AddCampaignScreen extends StatefulWidget {
 class _AddCampaignScreenState extends State<AddCampaignScreen> {
   final TextEditingController titleController1 = TextEditingController();
   final TextEditingController titleController2 = TextEditingController();
+
+  final campaignsController = Get.find<CampaignsFirebaseController>();
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.docId != null) {
+      // Fetch document data
+      campaignsController.getCampaignById(widget.docId!).then((data) {
+        if (data != null) {
+          setState(() {
+            titleController1.text = data["title"] ?? "";
+            titleController2.text = data["subtitle"] ?? "";
+            startDate = DateTime.tryParse(data["startDate"] ?? "");
+            endDate = DateTime.tryParse(data["endDate"] ?? "");
+            // Image field (if needed)
+            uploadedImageName = data["image"]?.split("/").last ?? "";
+          });
+        }
+      });
+    }
+  }
+
+
 
   DateTime? startDate;
   DateTime? endDate;
@@ -93,6 +128,9 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
       ],
     );
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -234,20 +272,66 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
                           ),
                         ),
                         const SizedBox(width: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            // save campaign
+                        Obx(() => campaignsController.isLoading.value
+                            ? CircularProgressIndicator(color: kPrimaryGreen)
+                            : MyButton.large(
+                          backgroundColor: kPrimaryGreen,
+                          onPressed: () async {
+                            if (titleController1.text.isEmpty ||
+                                titleController2.text.isEmpty ||
+                                startDate == null ||
+                                endDate == null) {
+                              Get.snackbar("Error", "Please fill all fields");
+                              return;
+                            }
+
+                            bool success;
+
+                            if (widget.docId != null) {
+                              // ⬅ Edit mode
+                              success = await campaignsController.updateCampaign(
+                                docId: widget.docId!,
+                                title: titleController1.text.trim(),
+                                subtitle: titleController2.text.trim(),
+                                startDate: startDate!,
+                                endDate: endDate!,
+                              );
+                            } else {
+                              // ⬅ Add mode
+                              success = await campaignsController.addCampaign(
+                                title: titleController1.text.trim(),
+                                subtitle: titleController2.text.trim(),
+                                startDate: startDate!,
+                                endDate: endDate!,
+                              );
+                            }
+
+                            if (success) {
+                              /// CLEAR EVERYTHING
+                              titleController1.clear();
+                              titleController2.clear();
+                              setState(() {
+                                startDate = null;
+                                endDate = null;
+                                uploadedImageBytes = null;
+                                uploadedImageName = null;
+                              });
+
+                              Get.snackbar(
+                                "Success",
+                                widget.docId != null ? "Campaign updated successfully" : "Campaign created successfully",
+                              );
+
+                              Navigator.pop(context); // Go back to list
+                            }
                           },
-                          child: const Text("Create"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0B462D),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 40, vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50),
+                          child: Center(
+                            child: MyText.bodyLarge(
+                              widget.docId != null ? 'Update' : 'Create',
+                              color: Colors.white,
                             ),
                           ),
+                        ),
                         ),
                       ],
                     )
