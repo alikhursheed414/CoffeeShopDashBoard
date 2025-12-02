@@ -67,7 +67,7 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           routerDelegate: routerDelegate,
           theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.green.shade900),
             useMaterial3: true,),
           routeInformationParser: BeamerParser(),
           backButtonDispatcher: BeamerBackButtonDispatcher(delegate: routerDelegate),

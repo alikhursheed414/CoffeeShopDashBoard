@@ -1,7 +1,9 @@
 import 'package:beamer/beamer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffee_shop_dashboard/core/helpers/colors.dart';
+import 'package:coffee_shop_dashboard/core/services/date_picker_service.dart';
 import 'package:coffee_shop_dashboard/modules/layouts/layout.dart';
+import 'package:coffee_shop_dashboard/widgets/dialogs/confirmation_dialog.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_card.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_flex.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_flex_item.dart';
@@ -35,25 +37,23 @@ class _CampaignsListPageState extends State<CampaignsListPage> {
     TextEditingController(text: data["subtitle"] ?? "");
     DateTime? startDate = DateTime.tryParse(data["startDate"] ?? "");
     DateTime? endDate = DateTime.tryParse(data["endDate"] ?? "");
-    String? uploadedImageName = data["image"]?.split("/").last;
 
     // Helper functions
     Future<void> pickStartDate() async {
-      final pickedDate = await showDatePicker(
+      final pickedDate = await DatePickerService.showThemedDatePicker(
         context: context,
         initialDate: startDate ?? DateTime.now(),
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2100),
+        helpText: 'Select Starting Date',
       );
       if (pickedDate != null) startDate = pickedDate;
     }
 
     Future<void> pickEndDate() async {
-      final pickedDate = await showDatePicker(
+      final pickedDate = await DatePickerService.showThemedDatePicker(
         context: context,
-        initialDate: endDate ?? DateTime.now(),
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2100),
+        initialDate: endDate ?? startDate ?? DateTime.now(),
+        firstDate: startDate, // End date can't be before start date
+        helpText: 'Select End Date',
       );
       if (pickedDate != null) endDate = pickedDate;
     }
@@ -64,7 +64,11 @@ class _CampaignsListPageState extends State<CampaignsListPage> {
       barrierDismissible: true,
       builder: (_) {
         return AlertDialog(
-          contentPadding: const EdgeInsets.all(16),
+          backgroundColor: colorWhite,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          contentPadding: const EdgeInsets.all(24),
           content: StatefulBuilder(
             builder: (context, setStateDialog) {
               // Date picker widget
@@ -73,9 +77,7 @@ class _CampaignsListPageState extends State<CampaignsListPage> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(label,
-                        style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w500)),
+                    MyText(label, fontSize: 14, fontWeight: 600),
                     const SizedBox(height: 6),
                     InkWell(
                       onTap: () async {
@@ -94,11 +96,11 @@ class _CampaignsListPageState extends State<CampaignsListPage> {
                             Text(
                               date == null
                                   ? "Select date"
-                                  : "${date.year}-${date.month}-${date.day}",
+                                  : DatePickerService.formatDate(date),
                               style: const TextStyle(fontSize: 14),
                             ),
                             const Spacer(),
-                            const Icon(Icons.calendar_today, size: 18),
+                            const Icon(Icons.calendar_today, size: 18, color: kPrimaryGreen),
                           ],
                         ),
                       ),
@@ -113,10 +115,19 @@ class _CampaignsListPageState extends State<CampaignsListPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "Edit Campaign",
-                        style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: kLightGreen,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.edit, color: kPrimaryGreen, size: 24),
+                          ),
+                          const SizedBox(width: 12),
+                          MyText("Edit Campaign", fontSize: 20, fontWeight: 700),
+                        ],
                       ),
                       const SizedBox(height: 24),
                       Row(
@@ -125,9 +136,19 @@ class _CampaignsListPageState extends State<CampaignsListPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("Title"),
+                                MyText("Title", fontSize: 14, fontWeight: 600),
                                 const SizedBox(height: 6),
-                                TextField(controller: titleController1),
+                                TextField(
+                                  controller: titleController1,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 14
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -144,9 +165,19 @@ class _CampaignsListPageState extends State<CampaignsListPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text("Subtitle"),
+                                MyText("Subtitle", fontSize: 14, fontWeight: 600),
                                 const SizedBox(height: 6),
-                                TextField(controller: titleController2),
+                                TextField(
+                                  controller: titleController2,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 14
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -157,29 +188,23 @@ class _CampaignsListPageState extends State<CampaignsListPage> {
                       const SizedBox(height: 32),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey.shade300),
                           borderRadius: BorderRadius.circular(12),
-                          color: Colors.grey.shade50,
+                          color: kLightGreen.withOpacity(0.3),
                         ),
-                        child: Column(
+                        child: Row(
                           children: [
-                            const Text("Upload Ad Image"),
-                            const SizedBox(height: 6),
-                            ElevatedButton.icon(
-                              onPressed: () async {
-                                // handle image upload if needed
-                                setStateDialog(() {}); // Refresh dialog UI
-                              },
-                              icon: const Icon(Icons.upload),
-                              label: const Text("Upload"),
-                            ),
-                            if (uploadedImageName != null)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 10),
-                                child: Text("Selected: $uploadedImageName"),
+                            const Icon(Icons.info_outline, color: kPrimaryGreen),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: MyText(
+                                "Image upload feature coming soon. Current image will be preserved.",
+                                fontSize: 13,
+                                color: kPrimaryGreen,
                               ),
+                            ),
                           ],
                         ),
                       ),
@@ -189,39 +214,58 @@ class _CampaignsListPageState extends State<CampaignsListPage> {
                         children: [
                           OutlinedButton(
                             onPressed: () => Navigator.pop(context),
-                            child: const Text("Cancel"),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: Colors.grey.shade300),
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: MyText("Cancel", fontWeight: 600),
                           ),
                           const SizedBox(width: 16),
                           Obx(() => campaignsController.isLoading.value
-                              ? const CircularProgressIndicator()
+                              ? const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 24),
+                                  child: CircularProgressIndicator(color: kPrimaryGreen),
+                                )
                               : ElevatedButton(
-                            onPressed: () async {
-                              if (titleController1.text.isEmpty ||
-                                  titleController2.text.isEmpty ||
-                                  startDate == null ||
-                                  endDate == null) {
-                                Get.snackbar(
-                                    "Error", "Please fill all fields");
-                                return;
-                              }
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: kPrimaryGreen,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24, vertical: 12
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    if (titleController1.text.isEmpty ||
+                                        titleController2.text.isEmpty ||
+                                        startDate == null ||
+                                        endDate == null) {
+                                      Get.snackbar(
+                                          "Error", "Please fill all fields");
+                                      return;
+                                    }
 
-                              bool success =
-                              await campaignsController.updateCampaign(
-                                docId: docId,
-                                title: titleController1.text.trim(),
-                                subtitle: titleController2.text.trim(),
-                                startDate: startDate!,
-                                endDate: endDate!,
-                              );
+                                    bool success =
+                                    await campaignsController.updateCampaign(
+                                      docId: docId,
+                                      title: titleController1.text.trim(),
+                                      subtitle: titleController2.text.trim(),
+                                      startDate: startDate!,
+                                      endDate: endDate!,
+                                    );
 
-                              if (success) {
-                                Get.snackbar(
-                                    "Success", "Campaign updated successfully");
-                                Navigator.pop(context);
-                              }
-                            },
-                            child: const Text("Update"),
-                          )),
+                                    if (success) {
+                                      Get.snackbar(
+                                          "Success", "Campaign updated successfully");
+                                      Navigator.pop(context);
+                                    }
+                                  },
+                                  child: MyText("Update", color: colorWhite, fontWeight: 600),
+                                )),
                         ],
                       )
                     ],
@@ -283,20 +327,20 @@ class _CampaignsListPageState extends State<CampaignsListPage> {
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: DataTable(
-                            columnSpacing: 250,
+                            columnSpacing: 200,
                             columns: [
                               DataColumn(
                                   label:
-                                  MyText("Title", fontSize: 16, fontWeight: 700)),
+                                  MyText("Title", fontSize: 14, fontWeight: 700)),
                               DataColumn(
                                   label: MyText("Start Date",
-                                      fontSize: 16, fontWeight: 700)),
+                                      fontSize: 14, fontWeight: 700)),
                               DataColumn(
                                   label: MyText("End Date",
-                                      fontSize: 16, fontWeight: 700)),
+                                      fontSize: 14, fontWeight: 700)),
                               DataColumn(
                                   label: MyText("Actions",
-                                      fontSize: 16, fontWeight: 700)),
+                                      fontSize: 14, fontWeight: 700)),
                             ],
                             rows: campaigns.map((doc) {
                               final data = doc.data() as Map<String, dynamic>;
@@ -307,20 +351,16 @@ class _CampaignsListPageState extends State<CampaignsListPage> {
                               final startDate = DateTime.tryParse(startDateStr);
                               final endDate = DateTime.tryParse(endDateStr);
 
-                              return DataRow(cells: [
-                                DataCell(MyText(title, fontSize: 14)),
-                                DataCell(MyText(
-                                  startDate != null
-                                      ? "${startDate.year}-${startDate.month}-${startDate.day}"
-                                      : "",
-                                  fontSize: 14,
-                                )),
-                                DataCell(MyText(
-                                  endDate != null
-                                      ? "${endDate.year}-${endDate.month}-${endDate.day}"
-                                      : "",
-                                  fontSize: 14,
-                                )),
+                            return DataRow(cells: [
+                              DataCell(MyText(title, fontSize: 14)),
+                              DataCell(MyText(
+                                DatePickerService.formatDate(startDate),
+                                fontSize: 14,
+                              )),
+                              DataCell(MyText(
+                                DatePickerService.formatDate(endDate),
+                                fontSize: 14,
+                              )),
                                 DataCell(Row(
                                   children: [
                                     IconButton(
@@ -334,27 +374,18 @@ class _CampaignsListPageState extends State<CampaignsListPage> {
                                         showDialog(
                                           context: context,
                                           builder: (context) {
-                                            return AlertDialog(
-                                              title: const Text("Delete Campaign"),
-                                              content: const Text(
-                                                  "Are you sure you want to delete this campaign? This action cannot be undone."),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  child: const Text("Cancel"),
-                                                ),
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                      backgroundColor: colorRed),
-                                                  onPressed: () {
-                                                    campaignsController.deleteCampaign(doc.id);
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  child: const Text("Delete"),
-                                                ),
-                                              ],
+                                            return ConfirmationDialog(
+                                              title: "Delete Campaign?",
+                                              message: "Are you sure you want to delete this\ncampaign? This action cannot be undone.",
+                                              confirmBtnText: "Delete",
+                                              cancelBtnText: "Cancel",
+                                              onConfirm: () {
+                                                campaignsController.deleteCampaign(doc.id);
+                                                Navigator.of(context).pop();
+                                              },
+                                              onCancel: () {
+                                                Navigator.of(context).pop();
+                                              },
                                             );
                                           },
                                         );

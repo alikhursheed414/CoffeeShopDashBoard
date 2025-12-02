@@ -1,13 +1,17 @@
 import 'package:beamer/beamer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coffee_shop_dashboard/controllers/product_controller.dart';
 import 'package:coffee_shop_dashboard/modules/layouts/layout.dart';
+import 'package:coffee_shop_dashboard/widgets/dialogs/confirmation_dialog.dart';
+import 'package:coffee_shop_dashboard/widgets/my_widgets/my_card.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_flex.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_flex_item.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_responsiv.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_text.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../core/helpers/colors.dart';
 import '../../widgets/my_widgets/my_button.dart';
-import 'AddProductScreen.dart';
 
 class ProductsPage extends StatefulWidget {
   const ProductsPage({super.key});
@@ -17,7 +21,7 @@ class ProductsPage extends StatefulWidget {
 }
 
 class _ProductsPageState extends State<ProductsPage> {
-  bool showAddScreen = false;
+  final productController = Get.put(ProductController());
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +39,6 @@ class _ProductsPageState extends State<ProductsPage> {
         }
       ),
     );
-
   }
 
   Widget _buildProductList() {
@@ -46,353 +49,478 @@ class _ProductsPageState extends State<ProductsPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            MyText(
               "Products",
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
+              fontSize: 24,
+              fontWeight: 700,
             ),
 
-            Row(
-              children: [
-                // DROPDOWN FILTER
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: kLightGreen,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    children: const [
-                      Text("Simple Latte",
-                          style: TextStyle(
-                              fontWeight: FontWeight.w500, fontSize: 14)),
-                      SizedBox(width: 8),
-                      Icon(Icons.keyboard_arrow_down_rounded,
-                          color: Colors.black87),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(width: 18),
-
-                // ADD PRODUCT BUTTON — FIXED
-                MyButton(
-                  onPressed: (){
-                    context.beamToNamed('/add-product');
-                  },
-                  borderRadiusAll: 10,
-                  msPadding: WidgetStateProperty.all(
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  ),
-                  child: MyText("+ Add new Product", color: Colors.white,),
-                ),
-                // GestureDetector(
-                //   onTap: () {
-                //     context.beamToNamed('/add-product');
-                //   },
-                //   child: Container(
-                //     padding:
-                //     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                //     height: 40,
-                //     decoration: BoxDecoration(
-                //       color: kPrimaryGreen,
-                //       borderRadius: BorderRadius.circular(10),
-                //     ),
-                //     child: Row(
-                //       children: const [
-                //         Icon(Icons.add, color: Colors.white, size: 18),
-                //         SizedBox(width: 8),
-                //         Text(
-                //           "Add new Product",
-                //           style: TextStyle(color: Colors.white),
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-                // ),
-              ],
+            MyButton(
+              onPressed: (){
+                productController.clearForm();
+                context.beamToNamed('/add-product');
+              },
+              borderRadiusAll: 10,
+              msPadding: WidgetStateProperty.all(
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+              child: MyText("+ Add new Product", color: Colors.white,),
             ),
           ],
         ),
 
         const SizedBox(height: 26),
 
-        // TABLE HEADER
-        _tableHeader(),
+        // STREAM BUILDER FOR REAL-TIME PRODUCT DATA
+        StreamBuilder<QuerySnapshot>(
+          stream: productController.getProductsStream(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(40.0),
+                  child: CircularProgressIndicator(color: kPrimaryGreen),
+                ),
+              );
+            }
 
-        const SizedBox(height: 8),
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(40.0),
+                  child: Column(
+                    children: [
+                      Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey.shade400),
+                      const SizedBox(height: 16),
+                      MyText("No products found", fontSize: 16, color: Colors.grey),
+                      const SizedBox(height: 8),
+                      MyText("Click 'Add new Product' to create your first product", 
+                        fontSize: 14, 
+                        color: Colors.grey.shade600
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
 
-        // Your product items
-        Column(
-          children:  [
-            ProductRow(
-              name: "Macchiato ",
-              temp: "Hot",
-              imagePath: "assets/images1/coffee.png",
-              size: "Medium",
-              price: "\$6.50",
-              quantity: '1',
-            ),
-            ProductRow(
-              name: "Cafe mocha",
-              temp: "Hot",
-              imagePath: "assets/images1/coffee.png",
-              size: "Medium",
-              price: "\$5.50",
-              quantity: '4',
-            ),
-            ProductRow(
-              name: "Latte miel",
-              temp: "Hot",
-              imagePath: "assets/images1/coffee.png",
-              size: "Medium",
-              price: "\$6.50",
-              quantity: '3',
-            ),
-            ProductRow(
-              name: "Latte simple",
-              temp: "Hot",
-              imagePath: "assets/images1/coffee.png",
-              size: "Medium",
-              price: "\$5.50",
-              quantity: '2',
-            ),
-          ],
+            final products = snapshot.data!.docs;
+
+            return MyCard(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columnSpacing: 30,
+                  headingRowHeight: 56,
+                  dataRowMinHeight: 60,
+                  dataRowMaxHeight: 70,
+                  columns: [
+                    DataColumn(label: MyText("#", fontSize: 14, fontWeight: 700)),
+                    DataColumn(label: MyText("Product Name", fontSize: 14, fontWeight: 700)),
+                    DataColumn(label: MyText("Category", fontSize: 14, fontWeight: 700)),
+                    DataColumn(label: MyText("Image", fontSize: 14, fontWeight: 700)),
+                    DataColumn(label: MyText("Size", fontSize: 14, fontWeight: 700)),
+                    DataColumn(label: MyText("Price", fontSize: 14, fontWeight: 700)),
+                    DataColumn(label: MyText("Actions", fontSize: 14, fontWeight: 700)),
+                  ],
+                  rows: products.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final doc = entry.value;
+                    final data = doc.data() as Map<String, dynamic>;
+                    
+                    final name = data["name"] ?? "";
+                    final category = data["category"] ?? "";
+                    final subCategory = data["subCategory"] ?? "";
+                    final availableIn = data["availableIn"] ?? "";
+                    final size = data["size"] ?? "-";
+                    final price = data["price"] ?? "0";
+                    final imagePath = data["image"] ?? "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400";
+
+                    // Build category display text
+                    String categoryText = category;
+                    if (category == "Coffee" && subCategory.isNotEmpty) {
+                      categoryText = "$subCategory ${availableIn.isNotEmpty ? '($availableIn)' : ''}";
+                    }
+
+                    return DataRow(
+                      cells: [
+                        // NUMBER
+                        DataCell(
+                          Container(
+                            height: 30,
+                            width: 30,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: kPrimaryGreen.withOpacity(0.2)
+                            ),
+                            child: Center(
+                              child: MyText('${index + 1}', fontSize: 14, color: kPrimaryGreen, fontWeight: 600),
+                            ),
+                          ),
+                        ),
+                        
+                        // NAME
+                        DataCell(
+                          SizedBox(
+                            width: 150,
+                            child: MyText(name, fontSize: 14, overflow: TextOverflow.ellipsis),
+                          ),
+                        ),
+                        
+                        // CATEGORY
+                        DataCell(
+                          SizedBox(
+                            width: 150,
+                            child: MyText(categoryText, fontSize: 14, overflow: TextOverflow.ellipsis),
+                          ),
+                        ),
+                        
+                        // IMAGE
+                        DataCell(
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              imagePath,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: kLightGreen,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.coffee, size: 24, color: kPrimaryGreen),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        
+                        // SIZE
+                        DataCell(MyText(size, fontSize: 14)),
+                        
+                        // PRICE
+                        DataCell(
+                          MyText("\$$price", fontSize: 14, fontWeight: 700, color: kPrimaryGreen),
+                        ),
+                        
+                        // ACTIONS
+                        DataCell(
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined, size: 20, color: kPrimaryGreen),
+                                onPressed: () => _showEditProductDialog(context, doc.id, data),
+                                tooltip: "Edit Product",
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline, size: 20, color: colorRed),
+                                onPressed: () => _showDeleteConfirmation(context, doc.id, name),
+                                tooltip: "Delete Product",
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            );
+          },
         ),
       ],
     );
   }
 
-  Widget _tableHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      child: Row(
-        children: const [
-          Expanded(flex: 3, child: Text("Product name")),
-          Expanded(flex: 2, child: Text("Available in")),
-          Expanded(flex: 2, child: Text("Upload image")),
-          Expanded(flex: 2, child: Text("Size")),
-          Expanded(flex: 2, child: Text("Price")),
-          Expanded(flex: 1, child: Text("Action")),
-        ],
-      ),
+  /// --------------------------------------------------------------
+  /// EDIT PRODUCT DIALOG
+  /// --------------------------------------------------------------
+  void _showEditProductDialog(BuildContext context, String docId, Map<String, dynamic> data) {
+    // Load data into controller
+    productController.loadProductData(data);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: colorWhite,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: kLightGreen,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.edit, color: kPrimaryGreen, size: 24),
+              ),
+              const SizedBox(width: 12),
+              MyText("Edit Product", fontWeight: 700, fontSize: 20),
+            ],
+          ),
+          content: SizedBox(
+            width: 600,
+            child: SingleChildScrollView(
+              child: AddProductForm(
+                controller: productController,
+                isEditMode: true,
+              ),
+            ),
+          ),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                OutlinedButton(
+                  onPressed: () {
+                    productController.clearForm();
+                    Navigator.pop(dialogContext);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.grey.shade300),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: MyText("Cancel", fontWeight: 600),
+                ),
+                const SizedBox(width: 12),
+                Obx(() => productController.isLoading.value
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24),
+                        child: CircularProgressIndicator(color: kPrimaryGreen),
+                      )
+                    : ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: kPrimaryGreen,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: () async {
+                          bool success = await productController.updateProduct(
+                            docId: docId,
+                            name: productController.nameController.text,
+                            price: productController.priceController.text,
+                            category: productController.selectedCategory.value,
+                            subCategory: productController.selectedSubCategory.value,
+                            availableIn: productController.selectedAvailable.value,
+                            size: productController.selectedSize.value,
+                          );
+
+                          if (success) {
+                            productController.clearForm();
+                            Navigator.pop(dialogContext);
+                          }
+                        },
+                        child: MyText("Update", color: colorWhite, fontWeight: 600),
+                      )),
+              ],
+            ),
+          ],
+        );
+      },
     );
   }
+
+  void _showDeleteConfirmation(BuildContext context, String docId, String productName) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return ConfirmationDialog(
+          title: "Delete Product?",
+          message: "Are you sure you want to delete\n'$productName'? This action cannot be undone.",
+          confirmBtnText: "Delete",
+          cancelBtnText: "Cancel",
+          onConfirm: () {
+            productController.deleteProduct(docId);
+            Navigator.pop(dialogContext);
+          },
+          onCancel: () {
+            Navigator.pop(dialogContext);
+          },
+        );
+      },
+    );
+  }
+
 }
 
+class AddProductForm extends StatelessWidget {
+  final ProductController controller;
+  final bool isEditMode;
 
-
-
-
-
-// class ProductsPage extends StatefulWidget {
-//   const ProductsPage({super.key});
-//
-//   @override
-//   State<ProductsPage> createState() => _ProductsPageState();
-// }
-//
-// class _ProductsPageState extends State<ProductsPage> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         // TOP BAR
-//         Row(
-//           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//           children: [
-//             const Text(
-//               "Products",
-//               style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
-//             ),
-//
-//             Row(
-//               children: [
-//                 // SIMPLE LATTE FILTER DROPDOWN
-//                 Container(
-//                   padding: const EdgeInsets.symmetric(horizontal: 14),
-//                   height: 40,
-//                   decoration: BoxDecoration(
-//                     color: kLightGreen,
-//                     borderRadius: BorderRadius.circular(10),
-//                   ),
-//                   child: Row(
-//                     children: const [
-//                       Text("Simple Latte",
-//                           style: TextStyle(
-//                               fontWeight: FontWeight.w500, fontSize: 14)),
-//                       SizedBox(width: 8),
-//                       Icon(Icons.keyboard_arrow_down_rounded,
-//                           color: Colors.black87),
-//                     ],
-//                   ),
-//                 ),
-//
-//                 const SizedBox(width: 18),
-//
-//                 // ADD NEW PRODUCT BUTTON
-//                 GestureDetector(
-//                   onTap: () {
-//                     setState(() {
-//                       // Switch dashboard content to AddProductScreen
-//                       Navigator.push(
-//                         context,
-//                         MaterialPageRoute(
-//                           builder: (_) => const AddProductScreen(),
-//                         ),
-//                       );
-//                     });
-//                   },
-//                   child: Container(
-//                     padding:
-//                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-//                     height: 40,
-//                     decoration: BoxDecoration(
-//                       color: kPrimaryGreen,
-//                       borderRadius: BorderRadius.circular(10),
-//                     ),
-//                     child: Row(
-//                       children: const [
-//                         Icon(Icons.add, color: Colors.white, size: 18),
-//                         SizedBox(width: 8),
-//                         Text(
-//                           "Add new Product",
-//                           style: TextStyle(color: Colors.white),
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ],
-//         ),
-//
-//         const SizedBox(height: 26),
-//
-//         // TABLE HEADER
-//         Container(
-//           padding: const EdgeInsets.symmetric(vertical: 14),
-//           child: Row(
-//             children: const [
-//               Expanded(flex: 3, child: Text("Product name")),
-//               Expanded(flex: 2, child: Text("Available in")),
-//               Expanded(flex: 2, child: Text("Upload image")),
-//               Expanded(flex: 2, child: Text("Size")),
-//               Expanded(flex: 2, child: Text("Price")),
-//               Expanded(flex: 1, child: Text("Action")),
-//             ],
-//           ),
-//         ),
-//
-//         const SizedBox(height: 8),
-//
-//         // LIST OF PRODUCTS
-//         Column(
-//           children: const [
-//             ProductRow(
-//               name: "Macchiato ",
-//               temp: "Hot",
-//               imagePath: "assets/images1/coffee.png",
-//               size: "Medium",
-//               price: "\$6.50",
-//               quantity:'1',
-//             ),
-//             ProductRow(
-//               name: "Cafe mocha",
-//               temp: "Hot",
-//               imagePath: "assets/images1/coffee.png",
-//               size: "Medium",
-//               price: "\$5.50",
-//               quantity:'4',
-//             ),
-//             ProductRow(
-//               name: "Latte miel",
-//               temp: "Hot",
-//               imagePath: "assets/images1/coffee.png",
-//               size: "Medium",
-//               price: "\$6.50",
-//               quantity:'3',
-//             ),
-//             ProductRow(
-//               name: "Latte simple",
-//               temp: "Hot",
-//               imagePath: "assets/images1/coffee.png",
-//               size: "Medium",
-//               price: "\$5.50",
-//               quantity:'2',
-//             ),
-//           ],
-//         ),
-//       ],
-//     );
-//   }
-// }
-//
-
-class ProductRow extends StatelessWidget {
-  final String name;
-  final String temp;
-  final String imagePath;
-  final String size;
-  final String price;
-  final String quantity;
-
-  const ProductRow({
+  const AddProductForm({
     super.key,
-    required this.name,
-    required this.temp,
-    required this.imagePath,
-    required this.size,
-    required this.price,
-    required this.quantity,
+    required this.controller,
+    this.isEditMode = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE7E7E7))),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-              flex: 3,
-              child: Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // NAME + PRICE
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    height:30,
-                    width:30,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: kPrimaryGreen.withOpacity(0.2)
+                  MyText("Product Name *", fontWeight: 700),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: controller.nameController,
+                    decoration: InputDecoration(
+                      hintText: "Enter product name",
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     ),
-                    child: Center(child: Text(quantity, style: const TextStyle(fontSize: 15,color: kPrimaryGreen))),
                   ),
-                  const SizedBox(width: 10),
-                  Text(name, style: const TextStyle(fontSize: 15)),
                 ],
-              )),
-          Expanded(flex: 2, child: Text(temp)),
-          Expanded(
-              flex: 2,
-              child: Image.asset(imagePath, width: 32, height: 32)),
-          Expanded(flex: 2, child: Text(size)),
-          Expanded(flex: 2, child: Text(price)),
-          Expanded(
-            flex: 1,
-            child: Row(
-              children: const [
-                Icon(Icons.edit, size: 18),
-                SizedBox(width: 12),
-                Icon(Icons.delete_outline, size: 18),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  MyText("Price *", fontWeight: 700),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: controller.priceController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      hintText: "Enter price",
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 16),
+
+        // CATEGORY
+        Obx(() => _buildDropdown(
+          label: "Category *",
+          value: controller.selectedCategory.value,
+          items: controller.categories,
+          onChanged: (value) {
+            if (value != null) {
+              controller.selectedCategory.value = value;
+            }
+          },
+        )),
+
+        const SizedBox(height: 16),
+
+        // COFFEE-SPECIFIC FIELDS
+        Obx(() {
+          if (controller.selectedCategory.value == "Coffee") {
+            return Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildDropdown(
+                        label: "Sub Category",
+                        value: controller.selectedSubCategory.value,
+                        items: controller.subCategories,
+                        onChanged: (value) {
+                          if (value != null) {
+                            controller.selectedSubCategory.value = value;
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildDropdown(
+                        label: "Available In",
+                        value: controller.selectedAvailable.value,
+                        items: controller.availableIn,
+                        onChanged: (value) {
+                          if (value != null) {
+                            controller.selectedAvailable.value = value;
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _buildDropdown(
+                  label: "Size",
+                  value: controller.selectedSize.value,
+                  items: controller.sizes,
+                  onChanged: (value) {
+                    if (value != null) {
+                      controller.selectedSize.value = value;
+                    }
+                  },
+                ),
               ],
+            );
+          }
+          return const SizedBox.shrink();
+        }),
+      ],
+    );
+  }
+
+  Widget _buildDropdown({
+    required String label,
+    required String? value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        MyText(label, fontWeight: 700),
+        const SizedBox(height: 8),
+        Container(
+          height: 50,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color(0xFFE2E2E2)),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value,
+              isExpanded: true,
+              dropdownColor: colorWhite,
+              hint: const Text("Select"),
+              icon: const Icon(Icons.keyboard_arrow_down_rounded),
+              onChanged: onChanged,
+              items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
             ),
           ),
-        ],
-      ),
+        )
+      ],
     );
   }
 }
+

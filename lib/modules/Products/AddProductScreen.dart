@@ -1,11 +1,15 @@
+import 'package:beamer/beamer.dart';
+import 'package:coffee_shop_dashboard/controllers/product_controller.dart';
 import 'package:coffee_shop_dashboard/modules/layouts/layout.dart';
+import 'package:coffee_shop_dashboard/widgets/my_widgets/MyTextField.dart';
+import 'package:coffee_shop_dashboard/widgets/my_widgets/my_button.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_flex.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_flex_item.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_responsiv.dart';
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart';
 import '../../core/helpers/colors.dart';
-import '../../main.dart';
+import '../../widgets/my_widgets/my_text.dart';
 
 class AddProductScreen extends StatefulWidget {
   final VoidCallback? onCancel;
@@ -17,28 +21,14 @@ class AddProductScreen extends StatefulWidget {
 }
 
 class _AddProductScreenState extends State<AddProductScreen> {
-  // Dropdown values
-  String? _selectedCategory;
-  String? _selectedAvailable;
-  String? _selectedSize;
+  final controller = Get.put(ProductController());
 
-  // Lists from your screenshot
-  final List<String> categories = [
-    "Simple Latte",
-    "Iced Latte",
-    "Cappuccino",
-    "Signature Coffee",
-    "Americano",
-    "Espresso",
-    "Flat White",
-    "Macchiato",
-    "Mocha",
-    "Affogato",
-    "Drinks"
-  ];
-
-  final List<String> availableIn = ["Hot", "Iced"];
-  final List<String> sizes = ["Small", "Medium", "Large"];
+  @override
+  void initState() {
+    super.initState();
+    // Ensure form is cleared when screen loads
+    controller.clearForm();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,11 +42,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     // Title
-                    const Text(
+                    MyText(
                       "Add New Product",
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
+                      fontSize: 20,
+                      fontWeight: 700,
                     ),
 
                     const SizedBox(height: 20),
@@ -70,33 +60,72 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           borderRadius: BorderRadius.circular(18),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black12.withOpacity(0.05),
+                              color: Colors.black12.withValues(alpha: 0.05),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-
-                            // PRODUCT NAME + CATEGORY
+                            // PRODUCT NAME + PRICE
                             Row(
                               children: [
                                 Expanded(
-                                  child: _textField(
-                                    label: "Product Name",
-                                    hint: "Enter coffee name",
+                                  child: MyTextField(
+                                    text: "Name *",
+                                    hintText: "Enter product name",
+                                    controller: controller.nameController,
+                                    keyboardType: TextInputType.text
                                   ),
                                 ),
                                 const SizedBox(width: 22),
                                 Expanded(
-                                  child: _dropdown(
-                                    label: "Product Category",
-                                    value: _selectedCategory,
-                                    items: categories,
-                                    onChanged: (v) => setState(() => _selectedCategory = v),
+                                  child: MyTextField(
+                                    text: "Price *",
+                                    hintText: "Enter price",
+                                    controller: controller.priceController,
+                                    keyboardType: const TextInputType.numberWithOptions(decimal: true)
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            // CATEGORY + SUB CATEGORY
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Obx(() => _dropdown(
+                                      label: "Category *",
+                                      value: controller.selectedCategory.value,
+                                      items: controller.categories,
+                                      onChanged: (value){
+                                        if(value != null){
+                                          controller.selectedCategory.value = value;
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 22),
+                                Expanded(
+                                  child: Obx(() {
+                                    final category = controller.selectedCategory.value;
+                                    if(category.isNotEmpty && category == "Coffee"){
+                                      return _dropdown(
+                                        label: "Sub Category",
+                                        value: controller.selectedSubCategory.value,
+                                        items: controller.subCategories,
+                                        onChanged: (value){
+                                          if(value != null){
+                                            controller.selectedSubCategory.value = value;
+                                          }
+                                        },
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                    }
                                   ),
                                 ),
                               ],
@@ -104,70 +133,67 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
                             const SizedBox(height: 20),
 
-                            // PRICE + SIZE
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _textField(
-                                    label: "Price",
-                                    hint: "9.50",
-                                  ),
-                                ),
-                                const SizedBox(width: 22),
-                                Expanded(
-                                  child: _dropdown(
-                                    label: "Product Size",
-                                    value: _selectedSize,
-                                    items: sizes,
-                                    onChanged: (v) => setState(() => _selectedSize = v),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(height: 20),
-
-                            // AVAILABLE IN
-                            _dropdown(
-                              label: "Available In",
-                              value: _selectedAvailable,
-                              items: availableIn,
-                              onChanged: (v) => setState(() => _selectedAvailable = v),
+                            // AVAILABLE IN + SIZE (Coffee only)
+                            Obx(() {
+                              final category = controller.selectedCategory.value;
+                              if(category.isNotEmpty && category == "Coffee"){
+                                return Row(
+                                  children: [
+                                    Expanded(
+                                      child: _dropdown(
+                                        label: "Available In",
+                                        value: controller.selectedAvailable.value,
+                                        items: controller.availableIn,
+                                        onChanged: (v){
+                                          if(v != null){
+                                            controller.selectedAvailable.value = v;
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 22),
+                                    Expanded(
+                                      child: _dropdown(
+                                        label: "Size",
+                                        value: controller.selectedSize.value,
+                                        items: controller.sizes,
+                                        onChanged: (v){
+                                          if(v != null){
+                                            controller.selectedSize.value = v;
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }
+                              return const SizedBox.shrink();
+                              }
                             ),
 
                             const SizedBox(height: 24),
 
-                            // IMAGE UPLOAD BOX
+                            // IMAGE PLACEHOLDER NOTE
                             Container(
                               width: double.infinity,
-                              height: 160,
+                              padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(color: const Color(0xFFE2E2E2)),
+                                color: kLightGreen.withOpacity(0.3),
                               ),
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () {},
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: kPrimaryGreen,
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 22, vertical: 10),
-                                      ),
-                                      child: const Text(
-                                        "Upload Image",
-                                        style: TextStyle(color: Colors.white),
-                                      ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.info_outline, color: kPrimaryGreen),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: MyText(
+                                      "Product image will use a default coffee placeholder. Firebase Storage integration coming soon!",
+                                      fontSize: 13,
+                                      color: kPrimaryGreen,
                                     ),
-                                    const SizedBox(height: 10),
-                                    const Text(
-                                      "Drag your image here or upload",
-                                      style: TextStyle(color: Colors.black54),
-                                    )
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
 
@@ -177,30 +203,45 @@ class _AddProductScreenState extends State<AddProductScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                TextButton(
-                                  onPressed: () {
-                                    if (widget.onCancel != null) widget.onCancel!();
+                                MyButton.rounded(
+                                  onPressed: (){
+                                    controller.clearForm();
+                                    if(context.canBeamBack){
+                                      context.beamBack();
+                                    }else{
+                                      context.beamToReplacementNamed("/products", popBeamLocationOnPop: true);
+                                    }
                                   },
-                                  child: const Text(
-                                    "Cancel",
-                                    style: TextStyle(fontSize: 16),
-                                  ),
+                                  backgroundColor: colorWhite,
+                                  child: MyText("Cancel", fontWeight: 600),
                                 ),
 
                                 const SizedBox(width: 16),
 
-                                ElevatedButton(
-                                  onPressed: () {},
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: kPrimaryGreen,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 38, vertical: 12),
-                                  ),
-                                  child: const Text(
-                                    "Add",
-                                    style: TextStyle(color: Colors.white, fontSize: 16),
-                                  ),
-                                )
+                                Obx(() => controller.isLoading.value
+                                    ? const CircularProgressIndicator(color: kPrimaryGreen)
+                                    : MyButton.rounded(
+                                        onPressed: () async {
+                                          // Add product to Firebase
+                                          bool success = await controller.addProduct(
+                                            name: controller.nameController.text,
+                                            price: controller.priceController.text,
+                                            category: controller.selectedCategory.value,
+                                            subCategory: controller.selectedSubCategory.value,
+                                            availableIn: controller.selectedAvailable.value,
+                                            size: controller.selectedSize.value,
+                                          );
+
+                                          if (success) {
+                                            controller.clearForm();
+                                            if (context.mounted) {
+                                              context.beamToNamed('/products');
+                                            }
+                                          }
+                                        },
+                                        child: MyText("  Add Product  ", fontWeight: 600, color: colorWhite),
+                                      ),
+                                ),
                               ],
                             )
                           ],
@@ -217,27 +258,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
     );
   }
 
-  // ---------------- COMPONENTS ----------------
-
-  Widget _textField({required String label, required String hint}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
-        TextField(
-          decoration: InputDecoration(
-            hintText: hint,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _dropdown({
     required String label,
     required String? value,
@@ -247,7 +267,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        MyText(label, fontWeight: 700),
         const SizedBox(height: 8),
         Container(
           height: 50,
@@ -260,12 +280,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
             child: DropdownButton<String>(
               value: value,
               isExpanded: true,
+              dropdownColor: colorWhite,
               hint: const Text("Select"),
               icon: const Icon(Icons.keyboard_arrow_down_rounded),
               onChanged: onChanged,
               items: items
-                  .map((e) =>
-                  DropdownMenuItem(value: e, child: Text(e)))
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                   .toList(),
             ),
           ),

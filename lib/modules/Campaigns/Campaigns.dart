@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:coffee_shop_dashboard/core/services/date_picker_service.dart';
 import 'package:coffee_shop_dashboard/modules/layouts/layout.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_flex.dart';
 import 'package:coffee_shop_dashboard/widgets/my_widgets/my_flex_item.dart';
@@ -11,11 +12,10 @@ import 'package:get/get_core/src/get_main.dart';
 import '../../controllers/campaign_controller/campaignControllers.dart';
 import '../../core/helpers/colors.dart';
 import '../../widgets/my_widgets/my_button.dart';
-import '../../widgets/my_widgets/my_spacing.dart';
 import '../../widgets/my_widgets/my_text.dart';
 
 class AddCampaignScreen extends StatefulWidget {
-  final String? docId; // ⬅ Optional, for edit
+  final String? docId;
 
   const AddCampaignScreen({super.key, this.docId});
 
@@ -59,11 +59,10 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
   String? uploadedImageName;
 
   Future<void> pickStartDate() async {
-    final pickedDate = await showDatePicker(
+    final pickedDate = await DatePickerService.showThemedDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      initialDate: startDate ?? DateTime.now(),
+      helpText: 'Select Starting Date',
     );
     if (pickedDate != null) {
       setState(() => startDate = pickedDate);
@@ -71,11 +70,11 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
   }
 
   Future<void> pickEndDate() async {
-    final pickedDate = await showDatePicker(
+    final pickedDate = await DatePickerService.showThemedDatePicker(
       context: context,
-      initialDate: startDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      initialDate: endDate ?? startDate ?? DateTime.now(),
+      firstDate: startDate, // End date can't be before start date
+      helpText: 'Select End Date',
     );
     if (pickedDate != null) {
       setState(() => endDate = pickedDate);
@@ -116,11 +115,11 @@ class _AddCampaignScreenState extends State<AddCampaignScreen> {
                 Text(
                   date == null
                       ? "Select date"
-                      : "${date.year}-${date.month}-${date.day}",
+                      : DatePickerService.formatDate(date),
                   style: const TextStyle(fontSize: 14),
                 ),
                 const Spacer(),
-                const Icon(Icons.calendar_today, size: 18),
+                const Icon(Icons.calendar_today, size: 18, color: kPrimaryGreen),
               ],
             ),
           ),
